@@ -1,0 +1,72 @@
+name: dmenu-wl
+# title:
+type: app
+base: core18
+version: '4.2.1-0dev2' # TODO: use git version from source
+summary: dmenu for wayland
+description: |
+  dmenu port to wayland
+# license:
+
+
+grade: stable
+confinement: strict
+
+
+apps:
+  dmenu-wl:
+    command: bin/snapcraft-preload $SNAP/usr/bin/dmenu-wl
+    extensions:
+      - gnome-3-28
+  dmenu-wl-run:
+    command: bin/snapcraft-preload $SNAP/usr/bin/dmenu-wl_run
+    extensions:
+      - gnome-3-28
+  dmenu-wl-path:
+    command: usr/bin/dmenu-wl_path
+
+
+plugs:
+  wayland:
+  x11:
+  desktop:
+  desktop-legacy:
+
+
+build-packages:
+  - cmake # meson likes cmake
+  - ctags # meson
+  - pkgconf
+  - quilt
+
+
+parts:
+  snapcraft-preload:
+    source: https://github.com/sergiusens/snapcraft-preload.git
+    plugin: cmake
+    build-packages:
+      - on amd64:
+        - gcc-multilib
+        - g++-multilib
+
+
+  # TODO: make shared base package
+  wayland-protocols:
+    source: https://gitlab.freedesktop.org/wayland/wayland-protocols.git
+    source-tag: '1.18'
+    source-depth: 1
+    plugin: autotools
+    configflags: [ --prefix=/usr ]
+    build-packages:
+      - libwayland-bin
+    # TODO: decrease staged packages
+
+
+  dmenu-wayland:
+    after: [ wayland-protocols ]
+    plugin: meson
+    source: https://github.com/nyyManni/dmenu-wayland.git
+    # source-tag:
+    meson-parameters:
+      - --prefix=/usr
+    # TODO: decrease staged packages
